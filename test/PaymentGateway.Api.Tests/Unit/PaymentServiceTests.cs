@@ -18,10 +18,9 @@ public class PaymentServiceTests
             repository,
             NullLogger<PaymentService>.Instance);
 
-        var result = await service.ProcessAsync(TestPaymentRequest.Valid());
+        var payment = await service.ProcessAsync(TestPaymentRequest.Valid());
 
-        Assert.Equal(PaymentOutcome.BankUnavailable, result.Outcome);
-        Assert.Null(result.Payment);
+        Assert.Null(payment);
         Assert.Null(repository.AddedPayment);
     }
 
@@ -39,17 +38,16 @@ public class PaymentServiceTests
             NullLogger<PaymentService>.Instance);
         var request = TestPaymentRequest.Valid("22224053430043", amount: 1050, currency: "USD");
 
-        var result = await service.ProcessAsync(request);
+        var payment = await service.ProcessAsync(request);
 
-        Assert.Equal(PaymentOutcome.Processed, result.Outcome);
-        Assert.NotNull(result.Payment);
-        Assert.Equal(expectedStatus, result.Payment!.Status);
-        Assert.Equal("0043", result.Payment.CardNumberLastFour);
-        Assert.Equal(request.ExpiryMonth, result.Payment.ExpiryMonth);
-        Assert.Equal(request.ExpiryYear, result.Payment.ExpiryYear);
-        Assert.Equal(request.Currency, result.Payment.Currency);
-        Assert.Equal(request.Amount, result.Payment.Amount);
-        Assert.Same(result.Payment, repository.AddedPayment);
+        Assert.NotNull(payment);
+        Assert.Equal(expectedStatus, payment!.Status);
+        Assert.Equal("0043", payment.CardNumberLastFour);
+        Assert.Equal(request.ExpiryMonth, payment.ExpiryMonth);
+        Assert.Equal(request.ExpiryYear, payment.ExpiryYear);
+        Assert.Equal(request.Currency, payment.Currency);
+        Assert.Equal(request.Amount, payment.Amount);
+        Assert.Same(payment, repository.AddedPayment);
     }
 
     private sealed class StubBank(BankDecision decision) : IBankClient

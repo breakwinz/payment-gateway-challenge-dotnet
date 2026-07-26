@@ -23,14 +23,12 @@ public class PaymentsController : Controller
     [HttpPost]
     public async Task<ActionResult<PostPaymentResponse>> PostPaymentAsync(PostPaymentRequest request)
     {
-        var result = await _paymentService.ProcessAsync(request);
-        return result.Outcome switch
-        {
-            PaymentOutcome.Processed => Created($"/api/payments/{result.Payment!.Id}", ToResponse(result.Payment)),
-            _ => Problem(
+        var payment = await _paymentService.ProcessAsync(request);
+        return payment is null
+            ? Problem(
                 title: "The payment outcome could not be determined. Contact Support.",
                 statusCode: StatusCodes.Status502BadGateway)
-        };
+            : Created($"/api/payments/{payment.Id}", ToResponse(payment));
 
         // local functions
         PostPaymentResponse ToResponse(Payment payment) => new()
@@ -49,12 +47,10 @@ public class PaymentsController : Controller
     public async Task<ActionResult<GetPaymentResponse>> GetPaymentAsync(Guid id)
     {
         var getPaymentResponse = await _paymentService.GetPaymentAsync(id);
-        if (getPaymentResponse is null)
-        {
-            return NotFound();
-        }
-
-        return Ok(ToResponse(getPaymentResponse));
+        
+        return getPaymentResponse is null
+        ? NotFound()
+        : Ok(ToResponse(getPaymentResponse));
 
         // local functions
         GetPaymentResponse ToResponse(Payment payment) => new()

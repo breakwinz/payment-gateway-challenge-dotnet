@@ -4,7 +4,6 @@ namespace PaymentGateway.Api.Tests.TestSupport;
 
 public static class TestPaymentRequest
 {
-    // The supplied simulator authorizes cards ending in an odd digit.
     public static PostPaymentRequest Valid(
         string cardNumber = "22224053432488771",
         int amount = 100,

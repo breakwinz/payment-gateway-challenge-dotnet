@@ -13,14 +13,14 @@ public class PaymentService(
     IPaymentsRepository repository,
     ILogger<PaymentService> logger)
 {
-    public async Task<PaymentProcessResult> ProcessAsync(PostPaymentRequest request)
+    public async Task<Payment?> ProcessAsync(PostPaymentRequest request)
     {
         var decision = await bankClient.AuthorizeAsync(request);
         if (decision == BankDecision.Unavailable)
         {
             logger.LogError("Bank outcome unavailable; no payment stored for card ending {CardNumberLastFour}",
                 request.CardNumber[^4..]);
-            return PaymentProcessResult.Unavailable();
+            return null;
         }
 
         var payment = new Payment(
@@ -34,7 +34,7 @@ public class PaymentService(
         await repository.AddAsync(payment);
         logger.LogInformation("Payment {PaymentId} {Status}: {Currency} {Amount} card ending {CardNumberLastFour}",
             payment.Id, payment.Status, payment.Currency, payment.Amount, payment.CardNumberLastFour);
-        return PaymentProcessResult.Processed(payment);
+        return payment;
     }
 
     public Task<Payment?> GetPaymentAsync(Guid id) => repository.GetAsync(id);

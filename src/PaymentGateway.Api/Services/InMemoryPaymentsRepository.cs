@@ -18,5 +18,5 @@ public class InMemoryPaymentsRepository : IPaymentsRepository
     }
 
     public Task<Payment?> GetAsync(Guid id) =>
-        Task.FromResult(_payments.TryGetValue(id, out var payment) ? payment : null);
+        Task.FromResult(_payments.GetValueOrDefault(id));
 }
